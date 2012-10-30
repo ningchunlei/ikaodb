@@ -172,6 +172,49 @@ var server = exports.db = thrift.createServer(DBService,{
                     response(ret)
                 })
         })
+    },
+
+    postMsg:function(msg,response){
+        mysqlPool.borrow(function(err,mysql){
+            i1 = false;
+            i2 = false;
+            i3 = false;
+            mysql.execute("insert into post (mid,uid,type,grade,ip,device,msgtext,msgdesc) values (?,?,?,?,?,?,?,?)"
+            ,[msg.mid,msg.uid,msg.type,msg.category,msg.ip,msg.device,msg.msgtext,msg.msgdesc]).on("end",function(){
+                    i1 = true
+                    if(i1 && i2 && i3){
+                        mysqlPool.release(mysql)
+                        response(TRUE);
+                    }
+            })
+            msg.tags.forEach(function(ele){
+                var ct = 0;
+                mysql.execute("insert into posttag (mid,tag) values (?,?)",[msg,mid,ele]).on("end",function(){
+                   ct ++;
+                   if(ct == msg.tags.length){
+                        i2 = true
+                   }
+                    if(i1 && i2 && i3){
+                        mysqlPool.release(mysql)
+                        response(TRUE);
+                    }
+                })
+            })
+            msg.attachments.forEach(function(ele){
+                var ct = 0;
+                mysql.execute("insert into postattach (mid,type,attachtext,attachname) values (?,?,?,?)",[msg.mid,
+                    ele.type,ele.attachtext,ele.attachname]).on("end",function(){
+                        ct ++;
+                        if(ct == msg.attachments.length){
+                            i3 = true
+                        }
+                        if(i1 && i2 && i3){
+                            mysqlPool.release(mysql)
+                            response(TRUE);
+                        }
+                    })
+            })
+        })
     }
 
 })
