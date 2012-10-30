@@ -1,0 +1,15 @@
+{
+    "appenders": [
+        { "type": "console" },
+        {
+            "category": "timeline",
+            "type": "dateFile",
+            "filename": "log/timeline.log",
+            "pattern": "yyyy-MM-dd"
+        }
+    ],
+
+    "levels": {
+        "timeline":  "info"
+    }
+}
